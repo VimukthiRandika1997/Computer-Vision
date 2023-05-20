@@ -3,12 +3,17 @@ import argparse
 import cv2
 import glob
 import matplotlib.pyplot as plt
+import itertools
+import datetime
 
 
 def load_images(path):
-    images_path = glob.glob(f'{path}/*')
+    exts = ['.jpg', '.png'] # image file formats
+    img_paths = [glob.glob(f'{path}/*{e}') for e in exts] # 2D array is returned
+    img_paths = list(itertools.chain.from_iterable(img_paths)) # flattening to 1D array
+    print(img_paths)
     images = []
-    for img_path in images_path:
+    for img_path in img_paths:
         img = cv2.imread(img_path)
         images.append(img)
     return images
@@ -29,25 +34,26 @@ def show_image(imgs):
 
 
 def save_imgs(imgs):
+    # get the current date and time
+    now = datetime.datetime.now()
     i = 1
     for img in imgs:
-        cv2.imwrite(f'./label{i}.jpg', img)
+        cv2.imwrite(f'../data/processed/label{i}_{now}.jpg', img)
         i += 1
     print('All images are saved!')
 
 
 def rotate_img(imgs):
     seq = iaa.Sequential([
-        iaa.Rotate((-45, 45))
+        iaa.Rotate((-15, 30))
     ], seed=42)
     return seq(images=imgs)
-
 
 def main(path):
     imgs = load_images(path)
     imgs = rotate_img(imgs)
     save_imgs(imgs)
-    # show_image(imgs)
+    show_image(imgs)
 
 
 # Apply the augmentation
